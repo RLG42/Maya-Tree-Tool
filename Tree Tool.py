@@ -10,6 +10,7 @@ Canopy_V1_Var = False
 Canopy_V2_Var = False
 branchLeaf_Var = False
 trunkLeaf_Var = False
+extrudeVertex_Var = False
 noiseAmount = 1.1
 
 ## Shaders ##
@@ -232,19 +233,26 @@ def branches(numberOfBranches, branchSections, branchRandomLength, bushSize, lea
                               
                 cmds.selectType( surfaceEdge=True ) 
                 for i in range (leafIterations):
-                    cmds.polyExtrudeEdge(kft=False, lty=bushWidth, ls=(bushSize, bushSize, bushSize), s=(1.0,1.0,1.0 ), ro= (0,0,0), d=3)
-                    cmds.polyCircularize(constructionHistory=1, smoothingAngle=30, evenlyDistribute=1, divisions=0, supportingEdges=1, twist=0, relaxInterior=1)
+                    if extrudeVertex_Var:                       
+                        cmds.polyExtrudeEdge(kft=False, lty=bushWidth, ls=(bushSize, bushSize, bushSize), s=(1.0,1.0,1.0 ), ro= (0,0,0), d=3)
+                        cmds.polyCircularize(constructionHistory=1, smoothingAngle=30, evenlyDistribute=1, divisions=0, supportingEdges=1, twist=0, relaxInterior=1)
+                    else:
+                        cmds.polyExtrudeEdge(kft=True, lty=bushWidth, ls=(bushSize, bushSize, bushSize), s=(2.5,2.5,2.5 ), ro= (0,0,0), d=3)
+                        cmds.polyCircularize(constructionHistory=1, smoothingAngle=30, evenlyDistribute=1, divisions=1, supportingEdges=1, twist=0, relaxInterior=1)
+                        
+                    
                     cmds.scale (random.uniform(0.8,1.9),random.uniform(0.8,1.9),random.uniform(0.8,1.9), r=True, cs=True)
                     cmds.move(0,-0.1,0, r=True)             
                     bushSize -=0.02
                     bushWidth -=0.2
-                                        
-                cmds.polyExtrudeVertex(length=leafLength,width=leafWidth,d=1)            
+                
+                if extrudeVertex_Var:                       
+                    cmds.polyExtrudeVertex(length=leafLength,width=leafWidth,d=1)            
                 facesLeaf = cmds.polyListComponentConversion( toFace=True)
                 cmds.select(facesLeaf)
                 cmds.sets(add='Canopy')    
                 cmds.select('Canopy')
-                #cmds.polySelectConstraint( pp=1, border=True)                                                    
+                cmds.polySelectConstraint( pp=1, border=True)                                                    
                 cmds.hyperShade(assign = CapShader)   
                 #cmds.polyCircularize(constructionHistory=1, smoothingAngle=30, evenlyDistribute=1, divisions=1, supportingEdges=1, twist=10, relaxInterior=1)  
                                                                                      
@@ -397,6 +405,10 @@ def leaf(leafInput):
 def branchLeaf(branchLeafInput):
     global branchLeaf_Var
     branchLeaf_Var = branchLeafInput
+    
+def extrudeVertex (extrudeVertexInput):
+    global extrudeVertex_Var
+    extrudeVertex_Var = extrudeVertexInput
                
 def makeBranch():
     
@@ -536,6 +548,9 @@ def createUI():
     #Leaves
     cmds.text( label='Leaves', align='center', h=40, fn='boldLabelFont', bgc=(0.1,0.2,0.1)  )
     cmds.separator(h=10) 
+    cmds.radioButtonGrp( label='Leaf Vertex Extrude ', labelArray2=['On', 'Off'], numberOfRadioButtons=2, h=25, 
+    onCommand1=lambda x:extrudeVertex(True), 
+    onCommand2=lambda x:extrudeVertex(False))
     bushSize = cmds.floatSliderGrp(label='Bush Size', minValue=0.1, maxValue=10, value=1.5, step=0.1, field=True)
     bushWidth = cmds.floatSliderGrp(label='Bush Width', minValue=0.1, maxValue=20, value=9, step=0.1, field=True)
     leafLength = cmds.floatSliderGrp(label='Leaf Length', minValue=0.1, maxValue=50, value=30, step=0.1, field=True)
