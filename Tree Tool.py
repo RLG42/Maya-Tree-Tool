@@ -172,7 +172,7 @@ iterations, canopyShape2, canopySize2, leafIterations, leafLength, leafWidth):
     if trunkLeaf_Var == False:
         cmds.setToolTo('Move')
         cmds.manipMoveContext( 'Move', e=True, m=0) 
-        branches(numberOfBranches, branchSections, branchRandomLength, bushSize, leafIterations, bushWidth, flowerDivisions, branchStart, branchLength, branchY, branchSpread, branchTaper, leafLength, leafWidth)
+        branches(numberOfBranches, branchSections, branchRandomLength, bushSize, leafIterations, bushWidth, flowerDivisions, branchStart, branchLength, branchY, branchSpread, branchTaper, leafLength, leafWidth, flowerLength, flowerSize)
     
     ## Add Noise ##
     if noise_Var:
@@ -184,7 +184,7 @@ iterations, canopyShape2, canopySize2, leafIterations, leafLength, leafWidth):
         #cmds.select(Cylinder[0]+'.f['+str(randomFace)+']')
         #makeBranch()    
     
-def branches(numberOfBranches, branchSections, branchRandomLength, bushSize, leafIterations, bushWidth, flowerDivisions, branchStart, branchLength, branchY, branchSpread, branchTaper, leafLength, leafWidth): 
+def branches(numberOfBranches, branchSections, branchRandomLength, bushSize, leafIterations, bushWidth, flowerDivisions, branchStart, branchLength, branchY, branchSpread, branchTaper, leafLength, leafWidth, flowerLength, flowerSize): 
 
     CapShader = cmds.shadingNode( 'lambert', asShader = True)   
     cmds.setAttr( CapShader + '.color', 0.258, 0.092, 0.049, type = 'double3' )   
@@ -485,7 +485,7 @@ def createUI():
     cmds.separator(h=10)
     
     #Trunk
-    cmds.text( label='Trunk', align='center', h=40, fn='boldLabelFont',bgc=(0.2,0.1,0.1)  )
+    cmds.text( label='Trunk', align='center', h=40, fn='boldLabelFont' ,  bgc=(0.1,0.2,0.1) )
     cmds.separator(h=10) 
     cmds.radioCollection()
     cmds.radioButton( label='Trunk Leaves On (Does not work with branches)', align='center', onCommand=lambda x:leaf(True))
@@ -526,7 +526,7 @@ def createUI():
     cmds.separator(h=10) 
     
     #Flowers
-    cmds.text( label='Flowers', align='center', h=40, fn='boldLabelFont', bgc=(0.4,0.1,0.2)  )
+    cmds.text( label='Flowers', align='center', h=40, fn='boldLabelFont',  bgc=(0.1,0.2,0.1)  )
     cmds.separator(h=10) 
     flowerSize = cmds.floatSliderGrp(label='Flower Shape', minValue=-5.0, maxValue=10, value=0.6, step=0.1, field=True)
     flowerLength = cmds.floatSliderGrp(label='Flower Size', minValue=1, maxValue=40, value=25.0, step=0.1, field=True)
@@ -534,7 +534,7 @@ def createUI():
     cmds.separator(h=10) 
     
     #Leaves
-    cmds.text( label='Leaves', align='center', h=40, fn='boldLabelFont', bgc=(0.1,0.8,0.4)  )
+    cmds.text( label='Leaves', align='center', h=40, fn='boldLabelFont', bgc=(0.1,0.2,0.1)  )
     cmds.separator(h=10) 
     bushSize = cmds.floatSliderGrp(label='Bush Size', minValue=0.1, maxValue=10, value=1.5, step=0.1, field=True)
     bushWidth = cmds.floatSliderGrp(label='Bush Width', minValue=0.1, maxValue=20, value=9, step=0.1, field=True)
@@ -544,7 +544,7 @@ def createUI():
     cmds.separator(h=10) 
      
     #Canopy
-    cmds.text( label='Canopy', align='center', h=40, fn='boldLabelFont' )
+    cmds.text( label='Canopy', align='center', h=40, fn='boldLabelFont', bgc=(0.1,0.2,0.1) )
     cmds.separator(h=10)
     cmds.radioButtonGrp( label='Canopy ',  labelArray3=['v1', 'v2', 'Off'], numberOfRadioButtons=3, h=50, 
     on1=lambda x:canopyV1(True), 
@@ -562,7 +562,7 @@ def createUI():
     cmds.separator(h=10)
     
     #Noise
-    cmds.text( label='Noise', align='center', h=40, fn='boldLabelFont' )
+    cmds.text( label='Noise', align='center', h=40, fn='boldLabelFont',  bgc=(0.1,0.2,0.1)  )
     cmds.separator(h=10) 
     cmds.radioCollection()
     cmds.radioButton( label='On', align='center', sl=True, onCommand=lambda x:noise(True))
@@ -572,10 +572,10 @@ def createUI():
     
     #UV
     cmds.button(label = "UVs", h=40,command = lambda *args: uvw(winID))   
-         
+    cmds.separator(h=10)     
     #Remove All
     cmds.button(label = "Undo", h=40,command = lambda *args: undoAction(winID))       
-    cmds.separator(h=25) 
+    cmds.separator(h=10) 
      
     #Exit    
     cmds.button(label = "Exit", h=40, command = lambda *args: cancelProc(winID))
