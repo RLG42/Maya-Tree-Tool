@@ -23,7 +23,7 @@ cmds.setAttr( CapShader + '.color', 0.258, 0.092, 0.049, type = 'double3' )
 def bigTree(winID, noiseAmount, branchLength, numberOfBranches, branchRandomLength, branchSections, branchY, 
 flowerSize, flowerLength, trunkWidth, trunkHeight, trunkRandom, trunkRandomMove, branchTaper, 
 canopySize, canopyHeight, trunkRotate, branchSpread, bushWidth, bushSize, flowerDivisions, branchStart, 
-iterations, canopyShape2, canopySize2, leafIterations, leafLength, leafWidth):
+iterations, canopyShape2, canopySize2, leafIterations, leafLength, leafWidth, trunkSecondHalf):
     
     cmds.delete (cmds.ls(type='shadingDependNode'))
     cmds.delete (cmds.ls(type='sets'))
@@ -64,7 +64,7 @@ iterations, canopyShape2, canopySize2, leafIterations, leafLength, leafWidth):
     leafDown = 6
     
     ### Trunk First Half ##    
-    for i in range (8):
+    for i in range (8): #8
         randomFloatScale = random.uniform(0.99+trunkRandom,1.0+trunkRandom)
         randomFloatX = random.uniform(-0.3,0.3)
         randomFloatZ = random.uniform(-0.3,0.3)
@@ -77,7 +77,7 @@ iterations, canopyShape2, canopySize2, leafIterations, leafLength, leafWidth):
         cmds.move (randomFloatX*trunkRandomMove, randomFloatY+trunkHeight, randomFloatZ*trunkRandomMove, r=True)
         
     ### Trunk Second Half ##       
-    for i in range (24):       
+    for i in range (trunkSecondHalf): #24      
         trunkLeafscale = 1.0        
         randomFloatScale = random.uniform(0.99+trunkRandom,1.0+trunkRandom)
         randomFloatX = random.uniform(-0.3,0.3)
@@ -122,12 +122,14 @@ iterations, canopyShape2, canopySize2, leafIterations, leafLength, leafWidth):
     canopyEDscale = 2.0
        
     ## Canopy's ##
-    if Canopy_V2_Var:  
-        canopy_V2(iterations, canopySize2, canopyShape2 )       
-       
+    if Canopy_V2_Var:
+        if trunkSecondHalf == 24:
+            canopy_V2(iterations, canopySize2, canopyShape2 , trunkSecondHalf )       
+        else:
+            cmds.inViewMessage( amg='Error: Trunk Sections must be <hl>24</hl>.', pos='midCenter', fts= 24, fade=True )
     if Canopy_V1_Var: 
-        canopy_V1(trunkLeaf_Var, canopySize, canopyHeight )
-                   
+        canopy_V1(trunkLeaf_Var, canopySize, canopyHeight, trunkSecondHalf )
+                    
     ## Create Base ##    
     cmds.select(Cylinder[0]+'.f[42]')
     cmds.scale(5.5,60.0,5.5, r=True)
@@ -169,7 +171,7 @@ iterations, canopyShape2, canopySize2, leafIterations, leafLength, leafWidth):
         cmds.scale(random.uniform(1.1,2.5),1.0,random.uniform(1.1,2.5), r=True)
         index2 +=1
     
-    ## Branches ##      
+    ## Make Branches ##      
     if trunkLeaf_Var == False:
         cmds.setToolTo('Move')
         cmds.manipMoveContext( 'Move', e=True, m=0) 
@@ -276,41 +278,59 @@ def branches(numberOfBranches, branchSections, branchRandomLength, bushSize, lea
         faceSelection +=branchSpread
         branchLength -=branchTaper
                            
-def canopy_V1(trunkLeaf_Var, canopySize, canopyHeight):  
-        
+def canopy_V1(trunkLeaf_Var, canopyWidth, canopyHeight, trunkSecondHalf):  
+
+    canopyHeight2=canopyHeight*2
+    canopyWidth2= 0.95 
+    
+    #Base   
     for i in range (8):
           
         Cylinder = "TreeOriginal"  
         cmds.select(Cylinder+'.f[43]')
             
-        cmds.scale(0.9,1,0.9, r=True)
-        randomFloatCanopyB = random.uniform(1.5,1.8)
-        randomFloatCanopyTopX = canopySize
-        randomFloatCanopyTopY = canopyHeight
+        #cmds.scale(0.9,1,0.9, r=True)
+        randomFloatCanopyV1 = random.uniform(-0.4,0.4)
 
-        cmds.polyExtrudeFacet(s=(randomFloatCanopyB,1,randomFloatCanopyB), t=(0, random.uniform(3,6), 0), d=1)                  
+        cmds.polyExtrudeFacet(s=(canopyWidth,1,canopyWidth), t=(randomFloatCanopyV1, canopyHeight/2-12, randomFloatCanopyV1), d=1)                  
         #cmds.polyExtrudeVertex(length=1,w=0.1)        
         #cmds.rotate(random.uniform(-5,5),random.uniform(0,0),random.uniform(-5,5))
         cmds.hyperShade(assign = CapShader)
-                       
+    
+    #Top                   
     for i in range (8):
-        cmds.polyExtrudeFacet(s=(randomFloatCanopyTopX,1,randomFloatCanopyTopX), t=(0, randomFloatCanopyTopY, 0), d=1)  
+        cmds.polyExtrudeFacet(s=(canopyWidth2,1,canopyWidth2), t=(randomFloatCanopyV1, canopyHeight2-2, randomFloatCanopyV1), d=1)  
         cmds.hyperShade(assign = CapShader)
-        randomFloatCanopyTopX -=0.1
-        randomFloatCanopyTopY -=0.8
-            
-    for j in range (20):
+        canopyWidth2 -=0.1
+        canopyHeight2 -=2.5
+    
+    #Modify Shape        
+    for j in range (40):
         floatRock = random.uniform(15,25)
-        floatRockMove = random.uniform(20,40)
-        floatRockMoveY = random.uniform(40,50)
+        floatRockMove = random.uniform(60,80)
+        floatRockMoveY = random.uniform(60,80)
         floatRockScale = random.uniform(0.8,1.9)
         floatRockSelect = random.randint(3,5)
-            
+        
+        #Random Face Selection Range
+        randomFace = random.randint(1640,1975)
+           
         if trunkLeaf_Var:
             randomFace = random.randint(9788,10123)
-        else:
-            randomFace = random.randint(1800,2000) 
-                
+        
+        #For each Branch Section Amounts   
+        modifyRanges = [
+        (random.randint(884,1261)), (random.randint(926,1261)), (random.randint(968,1303)), (random.randint(1010,1345)), (random.randint(1052,1387)),       
+        (random.randint(1094,1429)),(random.randint(1136,1471)),(random.randint(1178,1513)), (random.randint(1220,1555)), (random.randint(1262,1597)), 
+        (random.randint(1304,1639)), (random.randint(1346,1681)), (random.randint(1388,1723)), (random.randint(1430,1765)), (random.randint(1472,1807)),         
+        (random.randint(1514,1849)), (random.randint(1556,1891)), (random.randint(1598,1933)), (random.randint(1640,1975))]
+
+        for x in range (0,18):                    
+            if trunkSecondHalf == x+6:
+                randomFace = modifyRanges[x]
+                x+=1
+        
+        #Add Effect                               
         cmds.select(Cylinder+'.f['+str(randomFace)+']')
         cmds.polySelectConstraint( pp=1 )     
         polyInfo = cmds.polyInfo(fn=True)
@@ -322,14 +342,15 @@ def canopy_V1(trunkLeaf_Var, canopySize, canopyHeight):
             
     cmds.sets(add='Canopy')         
         
-def canopy_V2(iterations, canopySize2, canopyShape2):   
-    
+def canopy_V2(iterations, canopySize2, canopyShape2, trunkSecondHalf):   
+         
     Cylinder = 'TreeOriginal'          
     cmds.select(Cylinder+'.f[43]')           
     cmds.scale(2.9,2.9,2.9, r=True, cs=True) 
     cmds.polySubdivideFacet(dv=1) 
     cmds.select(Cylinder+'.vtx[1428]') 
-    cmds.move(0,5,0, r=True)       
+    cmds.move(0,5,0, r=True) 
+          
     canopyFaces = [Cylinder+'.f[1379]',Cylinder+'.f[1385]',Cylinder+'.f[1349]',Cylinder+'.f[1356]',Cylinder+'.f[1364]',Cylinder+'.f[1371]',        
     Cylinder+'.f[1410]',Cylinder+'.f[1417]',Cylinder+'.f[1425]',Cylinder+'.f[1390]',Cylinder+'.f[1396]',Cylinder+'.f[1401]']    
     indexCF = 0
@@ -479,7 +500,7 @@ def createUI():
     cmds.floatSliderGrp(trunkRandom, query=True, value=True),
     cmds.floatSliderGrp(trunkRandomMove, query=True, value=True),
     cmds.floatSliderGrp(branchTaper, query=True, value=True),
-    cmds.floatSliderGrp(canopySize, query=True, value=True),
+    cmds.floatSliderGrp(canopyWidth, query=True, value=True),
     cmds.floatSliderGrp(canopyHeight, query=True, value=True),
     cmds.floatSliderGrp(trunkRotate, query=True, value=True),
     cmds.intSliderGrp(branchSpread, query=True, value=True), 
@@ -492,7 +513,8 @@ def createUI():
     cmds.floatSliderGrp(canopySize2, query=True, value=True), 
     cmds.intSliderGrp(leafIterations, query=True, value=True), 
     cmds.floatSliderGrp(leafLength, query=True, value=True),
-    cmds.floatSliderGrp(leafWidth, query=True, value=True)))
+    cmds.floatSliderGrp(leafWidth, query=True, value=True),
+    cmds.intSliderGrp(trunkSecondHalf, query=True, value=True))) 
                      
     cmds.separator(h=10)
     
@@ -508,6 +530,7 @@ def createUI():
     trunkRandom = cmds.floatSliderGrp(label='Trunk Taper', minValue=-0.1, maxValue=0.0, value=-0.04, step=0.01, pre=2, field=True)
     trunkRandomMove = cmds.floatSliderGrp(label='Trunk Random Move', minValue=-25, maxValue=25.0, value=5.00, step=0.01, pre=2, field=True)
     trunkRotate = cmds.floatSliderGrp(label='Trunk Curl', minValue=-15, maxValue=15.0, value=0.00, step=0.01, pre=1, field=True)
+    trunkSecondHalf = cmds.intSliderGrp(label='Trunk Sections', minValue=6, maxValue=24, value=24, step=1,  field=True)
     cmds.separator(h=10) 
     
     #Branches
@@ -568,8 +591,8 @@ def createUI():
     of2=lambda x:canopyV2(False))
     
     cmds.separator(h=10)
-    canopySize = cmds.floatSliderGrp(label='Canopy V1 Width', minValue=0.1, maxValue=2, value=1.2, step=0.01, pre=2, field=True)
-    canopyHeight = cmds.floatSliderGrp(label='Canopy V1 Height', minValue=1, maxValue=30, value=1, step=1, field=True)
+    canopyWidth = cmds.floatSliderGrp(label='Canopy V1 Width', minValue=1, maxValue=2, value=1.45, step=0.01, pre=2, field=True)
+    canopyHeight = cmds.floatSliderGrp(label='Canopy V1 Height', minValue=1, maxValue=30, value=10, step=1, field=True)
     cmds.separator(h=10)
     iterations = cmds.intSliderGrp(label='Canopy V2 Iterations', minValue=0, maxValue=4, value=2, step=1, field=True)
     canopyShape2 = cmds.floatSliderGrp(label='Canopy V2 Shape', minValue=0.01, maxValue=2, value=0.2, step=0.01, pre=2, field=True)
