@@ -1,4 +1,4 @@
-# Tree Tool By Rory Gardner
+# Tree Tool By Rory Gardner 2024
 
 import maya.cmds as cmds
 import random
