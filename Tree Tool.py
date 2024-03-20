@@ -132,7 +132,10 @@ iterations, canopyShape2, canopySize2, leafIterations, leafLength, leafWidth, tr
             cmds.polyExtrudeFacet(s=(randomFloatScale,randomFloatScale,randomFloatScale), t=(0, 0, 0), d=1)   
             cmds.rotate(random.uniform(-trunkRotate,trunkRotate),random.uniform(0,0),random.uniform(-trunkRotate,trunkRotate), r=True)
             cmds.move (randomFloatX*trunkRandomMove, randomFloatY+trunkHeight, randomFloatZ*trunkRandomMove, r=True)
-        
+            
+            
+            
+            #addNoiseCanopy(2)
             ### Trunk Leafs ###       
             if trunkLeaf_Var: 
                 cmds.selectType( surfaceEdge=True ) 
@@ -189,9 +192,32 @@ iterations, canopyShape2, canopySize2, leafIterations, leafLength, leafWidth, tr
         ## Split Stem 1 ##
         cmds.select(Cylinder[0]+'.f[484:504]', r=True)
         cmds.polyCircularize(divisions=0, ws=True, twist=-52)
-        cmds.select(Cylinder[0]+'.f[484:504]', r=True)
-        trunkExtrude(8,trunkRotate, trunkRandom, trunkHeight, -2)
+        cmds.select(Cylinder[0]+'.f[484:504]', r=True)      
+        trunkExtrude(8,trunkRotate, trunkRandom, trunkHeight, -2)   
         
+        ## Stem Bush 1 ##  
+        cmds.select(Cylinder[0]+'.vtx[725]',  r=True) 
+        x,y,z = cmds.pointPosition();   
+        cmds.polyPlatonic( r=22, subdivisions=2, sphericalInflation=random.uniform(4,6) )
+        cmds.move(x,y+25,z) 
+        
+        addMovement(50,3)
+        addNoiseCanopy(3) 
+        cmds.scale(random.uniform(1,1.1),random.uniform(1,1.2),random.uniform(1,1.1))        
+        cmds.rename("Bush_1")
+        
+        ## Stem Bush 1 ##
+        cmds.select(Cylinder[0]+'.vtx[910]',  r=True) 
+        x,y,z = cmds.pointPosition();   
+        cmds.polyPlatonic( r=22, subdivisions=2, sphericalInflation=random.uniform(4,6) )
+        cmds.move(x,y+25,z) 
+        
+        addMovement(50,3)
+        addNoiseCanopy(3)
+        cmds.scale(random.uniform(1,1.1),random.uniform(1,1.2),random.uniform(1,1.1))       
+        cmds.rename("Bush_1")
+        
+            
         if trunkStems >= 3:
             cmds.select(Cylinder[0]+'.f[494:504]', r=True)
             cmds.polyCircularize(divisions=0, ws=True, twist=52)
@@ -213,7 +239,10 @@ iterations, canopyShape2, canopySize2, leafIterations, leafLength, leafWidth, tr
             cmds.polyCircularize(divisions=0, ws=True, twist=0)
             cmds.select(Cylinder[0]+'.f[505:513]', Cylinder[0]+'.f[43]', r=True)         
             trunkExtrude(6,trunkRotate, trunkRandom, trunkHeight, 2)
-                          
+            
+            cmds.polyPlatonic( r=22, subdivisions=2, sphericalInflation=5 ) 
+            addMovement(50,2)   
+                     
     ## Make Branches ##      
     if trunkLeaf_Var == False:
         cmds.setToolTo('Move')
@@ -475,6 +504,43 @@ def addNoise(amount):
         mod = x % values_count
         optimize_setter += [values[mod-1]*1,values[mod-1]*1,values[mod-1]*1]
     cmds.setAttr('TreeOriginal.vtx[:]', *optimize_setter)
+    cmds.polySmooth(c=1,dv=2,kb=True,ro=1)
+
+
+def addMovement(number, amount):
+    
+    for j in range (number):
+        floatRock = random.uniform(150,300)
+        floatRockMove = random.uniform(50,100)
+        floatRockScale = random.uniform(0.8,0.9)
+        floatRockSelect = random.randint(3,5)
+        
+        randomFace = random.randint(10,800) 
+        cmds.select('pPlatonic1'+'.f['+str(randomFace)+']')
+        cmds.polySelectConstraint( pp=floatRockSelect )     
+        polyInfo = cmds.polyInfo(fn=True)
+        polyInfoArray = re.findall(r"[\w.-]+", polyInfo[0]) # convert the string to array with regular expression
+        polyInfoX = float(polyInfoArray[2])
+        polyInfoY = float(polyInfoArray[3])
+        polyInfoZ = float(polyInfoArray[4])    
+        cmds.move (polyInfoX/floatRockMove*amount,polyInfoY/floatRockMove*amount,polyInfoZ/floatRockMove*amount, r=True)
+        cmds.polyExtrudeFacet(s=(floatRockScale,floatRockScale,floatRockScale), t=(polyInfoX/floatRock, polyInfoY/floatRock, polyInfoZ/floatRock))  
+        
+def addNoiseCanopy (amount):
+         
+    cmds.select( clear=True )    
+    cmds.select('pPlatonic1')
+        
+    vtxCount2 = list(range(cmds.polyEvaluate(v=True)))
+    random.shuffle(vtxCount2)
+    values = [random.triangular(amount,0,0) for i in range(50)]
+    values_count = len(values)
+    optimize_setter = []
+    
+    for x in vtxCount2:
+        mod = x % values_count
+        optimize_setter += [values[mod-1]*1,values[mod-1]*1,values[mod-1]*1]
+    cmds.setAttr('pPlatonic1.vtx[:]', *optimize_setter)
     cmds.polySmooth(c=1,dv=2,kb=True,ro=1)
       
 def noise(input):
